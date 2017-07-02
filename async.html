@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>F1 Driver Rekognition</title>
+
+<link rel="stylesheet" type="text/css" href="f1-rekog.css">
+
+<script src="inc/local-main-head.js"></script>
+
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.27.0.min.js"></script>
+
+<!-- Rekognition includes -->
+<script src="inc/local-fuzzy.js"></script>
+<script src="inc/local-rekog.js"></script>
+
+<!-- JavaScript Photo include -->
+<script src="inc/local-jsphoto.js"></script>
+
+<!-- Cognito includes -->
+<script src="inc/aws-cognito-sdk.min.js"></script>
+<script src="inc/amazon-cognito-identity.min.js"></script>
+<script src="inc/amazon-cognito.min.js"></script>
+<script src="inc/local-cognito.js"></script>
+
+</head>
+<body>
+
+<div id="intro">
+	<h4>Which F1 driver do you look like?</h4>
+	<a href="https://aws.amazon.com/rekognition">
+		<img id="logo" src="https://s3-eu-west-1.amazonaws.com/f1-rekog/images/rekog.png" height="100"/><br/><br/>
+		<span class="orangeBold">Powered by Amazon Rekognition</span><br/><br/>
+	</a>
+	<span class="main">Please note, currently only Chrome, Edge and Firefox browsers are supported.<br/>Other browsers may work but will not provide full functionality.</span><br/><br/>
+</div>
+
+<div id="logout" class="controls" style="display:none">
+	<a href="#" id="Logout">Logout</a><br/><br/>
+</div>
+
+<div id="camera" class="form" style="display:none">
+    <video id="video">Video stream not available.</video><br/><br/>
+    <button id="startbutton">Take photo</button><br/><br/>
+</div>
+
+<div id="preview" class="preview" style="display:none">
+	<div id="rekogLandmarks" class="rekogLandmarks" style="display:none"></div>
+	<canvas id="canvas">
+		<div id="outputPhoto" class="outputPhoto" style="display:block">
+    		<img id="photo" alt="Photo will appear here"> 
+  		</div>
+  	</canvas>
+	<br/><br/>
+	<span id="processing">Processing Image...</span><br/><br/>
+</div>
+
+<div id="restart" class="" style="display:none">
+	<a href="" onmousedown="location.reload();">Click here to restart</a>
+	<br/><br/>
+</div>
+
+<div id="image-details" class="" style="display:none"></div><br/><br/>
+
+<div id="result-text" class="" style="display:none"></div><br/><br/>
+
+<div id="result" class="" style="display:none">
+	<img src="" id="result-image" height="200" alt="Result...">
+	<img src="" id="result-image2" height="200" alt="Result...">
+</div>
+
+<div id="controls" class="controls" style="display:block">
+	<a href="#" id="showDebug">Show / Hide Verbose Output</a><br/><br/>
+</div>
+
+<div id="disclaimer" class="disclaimer" style="display:none">
+	<br/><br/>
+	<span class="disclaimer"><strong>Disclaimer:</strong>
+	Image details (gender, age range, etc) are provided by Rekognition.
+	Rekognition uses powerful and accurate machine learning algorithms to match faces and objects.
+	However, this face match algorithm uses a simple coordinate formula created for a bit of fun, which may produce varied results.
+	For more information on using Amazon Rekognition, click the logo above.
+	</span>
+</div>
+
+<div id="error" class="error" style="display:none"></div>
+
+<div id="debugDiv" class="debugDiv" style="display:none">
+	<div id="debugHeader" class="shell-top-bar" style="display:block">
+		<span>Verbose output</span><br/>
+	</div>
+	<div id="debugOutput" class="shell-body"></div><br/><br/>
+</div>
+
+<!-- Load main page functions -->
+<script src="inc/local-main-body.js"></script>
+
+</body>
+</html>

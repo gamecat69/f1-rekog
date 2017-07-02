@@ -1,0 +1,358 @@
+<html>
+<head>
+<title>Rekognition Prototype</title>
+
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.27.0.min.js"></script>
+
+<!-- Rekognition includes -->
+<script src="inc/local-fuzzy.js"></script>
+<script src="inc/local-rekog.js"></script>
+
+<!-- JavaScript Photo include -->
+<script src="inc/local-jsphoto.js"></script>
+
+<!-- Cognito includes -->
+<script src="inc/aws-cognito-sdk.min.js"></script>
+<script src="inc/amazon-cognito-identity.min.js"></script>
+<script src="inc/amazon-cognito.min.js"></script>
+<script src="inc/local-cognito.js"></script>
+
+<style type="text/css">
+
+.form {
+    padding: 0px 0px 0px 00px;
+    font: 0.85em Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-style: italic;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.preview {
+    font: 0.85em Arial, Helvetica, sans-serif;
+    font-style: italic;
+}
+
+body {
+	background:#FFF;
+	text-align: center;
+	font: 0.85em Arial, Helvetica, sans-serif;
+	width: 600px;
+	margin: 10 auto;   
+}
+
+.disclaimer {
+	text-align: center;
+	font: 0.65em Arial, Helvetica, sans-serif;
+	width: 500px;
+	margin: 5 auto;   
+}
+
+h4 {
+	text-align: center;
+	font: 1.5em Arial, Helvetica, sans-serif;
+	font-weight: bold;
+}
+
+.error {
+	font: 1em Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	color: #cc0000;
+}
+
+.login-message {
+	font: 1em Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	color: #0000A0;
+}
+
+a:link{
+	text-decoration: none;
+	color: #000000;
+	font-weight: bold;
+}
+
+.shell-top-bar {
+  text-align: left;
+  color: #525252;
+  padding: 5px 5px 5px 5px;
+  margin: 0;
+  #text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+  font: 0.8em 'Andale Mono', Consolas, 'Courier New';
+  font-size: 0.85em;
+  border: 1px solid #CCCCCC;
+  border-bottom: none;
+ 
+  -webkit-border-top-left-radius: 3px;
+  -webkit-border-top-right-radius: 3px;
+  -moz-border-radius-topleft: 3px;
+  -moz-border-radius-topright: 3px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+ 
+  background: #f7f7f7; /* Old browsers */
+  background: -moz-linear-gradient(top,  #f7f7f7 0%, #B8B8B8 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f7f7f7), color-stop(100%,#B8B8B8)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #f7f7f7 0%,#B8B8B8 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #f7f7f7 0%,#B8B8B8 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #f7f7f7 0%,#B8B8B8 100%); /* IE10+ */
+  background: linear-gradient(to bottom,  #f7f7f7 0%,#B8B8B8 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7f7f7', endColorstr='#B8B8B8',GradientType=0 ); /* IE6-9 */
+}
+
+.shell-body {
+  margin: 0;
+  padding: 5px;
+  text-align:left;
+  list-style: none;
+  background: #333333;
+  color: #FFF;
+  font: 0.8em 'Andale Mono', Consolas, 'Courier New';
+  line-height: 1.6em;
+  word-wrap: break-word;
+ 
+  -webkit-border-bottom-right-radius: 3px;
+  -webkit-border-bottom-left-radius: 3px;
+  -moz-border-radius-bottomright: 3px;
+  -moz-border-radius-bottomleft: 3px;
+  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+ 
+.shell-body li:before {
+  content: '$';
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+ 
+.shell-body li {
+  word-wrap: break-word;
+  position: relative;
+  padding: 0 0 0 15px;
+}
+
+.controls {
+	font: 0.8em Arial, Helvetica, sans-serif;
+	text-decoration: none;
+	color: #888888;
+	font-weight: bold;
+}
+
+.orangeBold {
+	font: 0.9em Arial, Helvetica, sans-serif;
+	text-decoration: none;
+	color: #e47911;
+	font-weight: bold;
+}
+
+.camera {
+  width: 340px;
+}
+
+.outputPhoto {
+  width: 340px;
+}
+
+
+</style>
+
+</head>
+<body>
+
+<div id="intro">
+	<h4>Which F1 driver do you look like?</h4>
+	<span>Upload an image to find out!</span><br/><br/><br/>
+	<a href="https://aws.amazon.com/rekognition">
+		<img id="logo" src="images/rekog.png" height="100"/><br/><br/>
+		<span class="orangeBold">Powered by Amazon Rekognition</span><br/><br/>
+	</a>
+</div>
+
+<div id="logout" class="controls" style="display:none">
+	<a href="#" id="Logout">Logout</a>
+	<br/><br/>
+</div>
+
+<div id="controls" class="controls" style="display:block">
+	<a href="#" id="showDebug">Show / Hide Verbose Output</a>
+	<br/><br/>
+	<!-- <a href="#" id="profiles" onmousedown="profileFaces(0)">Profile Image 0</a><br/> -->
+	<form name="profileNum">
+	<select onchange="profileFaces(this)">
+	<option value="0">0</option>
+	<option value="1">1</option>
+	<option value="2">2</option>
+	<option value="3">3</option>
+	<option value="4">4</option>
+	<option value="5">5</option>
+	<option value="6">6</option>
+	<option value="7">7</option>
+	<option value="8">8</option>
+	<option value="9">9</option>
+	<option value="10">10</option>
+	<option value="11">11</option>
+	<option value="12">12</option>
+	<option value="13">13</option>
+	<option value="14">14</option>
+	<option value="15">15</option>
+	<option value="16">16</option>
+	<option value="17">17</option>
+	<option value="18">18</option>
+	<option value="19">19</option>
+	<option value="20">20</option>
+	</select>
+	<br/><br/>
+</div>
+
+<div id="camera" class="form" style="display:none">
+    <video id="video">Video stream not available.</video><br/><br/>
+    <button id="startbutton">Take photo</button>  
+</div>
+
+<div id="preview" class="preview" style="display:none">
+	
+	<!--
+	<img id="preview-image" src="" height="200" alt="Image preview..."/></br></br>
+	-->
+
+	<canvas id="canvas">
+		<div id="outputPhoto" class="outputPhoto" style="display:none">
+    		<img id="photo" alt="Photo will appear here"> 
+  		</div>
+  	</canvas>
+	
+	<br/><br/>
+	<span id="processing">Processing Image...</span>
+	</br></br>
+</div>
+
+<div id="image-details" class="" style="display:none"></div></br></br>
+
+<div id="result-text" class="" style="display:none"></div></br></br>
+
+<div id="result" class="" style="display:none">
+	<img src="" id="result-image" height="200" alt="Result...">
+</div>
+
+<div id="disclaimer" class="disclaimer" style="display:none">
+	</br></br>
+	<span class="disclaimer"><strong>Disclaimer:</strong> This is for fun only. It is not recommended to use this to verify your claim you are the 'real' F1 driver to gain VIP access!!
+	The quality of a face match is dependent on the quality and type of photos used.
+	For more information on using Amazon Rekognition, click the logo above.
+	</span>
+</div>
+
+<div id="error" class="error" style="display:none"></div>
+
+<div id="debugDiv" class="debugDiv" style="display:none">
+	<div id="debugHeader" class="shell-top-bar" style="display:block">
+		<span>Verbose output</span><br/>
+	</div>
+	<div id="debugOutput" class="shell-body"></div>
+	<br/><br/>
+</div>
+
+<div id="amazon-root"></div>
+<script type="text/javascript">
+
+//	-----------------------------------------------------------------------
+//	Author: anselln
+//
+//	Purpose: To demonstrate Amazon Rekognition capabilities in a fun way!!
+//
+//	Info: This is a static web page hosted on S3
+//		  All functionality is carried out using JavaScript
+//		  Authentication to AWS using Cognito
+//		  Image processing powered by Rekognition
+//
+//	Date: March 2017
+//	-----------------------------------------------------------------------
+
+//	-----------------------
+//	Cognito Code
+//	-----------------------
+
+//	Get a temporary guest access key to access AWS resources
+
+window.onload = function() {
+
+	debugOutput('root: Attempting login using CognitoIdentityCredentials');
+
+	//	Add listener for button click
+	startbutton = document.getElementById('startbutton');
+	startbutton.addEventListener('click', function(ev){
+		processFile();
+		ev.preventDefault();
+	}, false);
+
+	getTempAccess('', function(err, data) {
+		
+		document.getElementById('error').style.display = 'none';
+		document.getElementById('result-text').style.display = 'none';
+		
+		if (err) {
+			debugOutput('root: Unable to login as guest:' + JSON.stringify(err, null, 2));
+			document.getElementById('error').style.display = 'block';
+			document.getElementById('error').innerHTML = 'Error: ' +  err;
+		} else {
+			debugOutput('root: Guest login OK. AccessKeyId: ' + data.accessKeyId);
+			document.getElementById('camera').style.display = 'block';
+		}
+	
+	});
+	
+	//	Init JS Photo functions and vars
+	jsPhotoStartup();
+};
+
+</script>
+
+<script type="text/javascript">
+
+function debugOutput (str) {
+	    		
+	var currentdate = new Date(); 
+	var datetime = currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/" 
+                + currentdate.getFullYear() + " "  
+                + currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
+		
+	//	Append debug div with str
+	var mydiv = document.getElementById("debugOutput");
+	var newcontent = document.createElement('span');
+	newcontent.innerHTML = '<br/>' + datetime + ' ' + str;
+
+	while (newcontent.firstChild) {
+			mydiv.appendChild(newcontent.firstChild);
+	}
+
+}// end function debugOutput
+
+//	------------------------
+//	Error Handling
+//	------------------------
+window.onerror = function(error, url, line) {
+debugOutput('Error: ' + error + ' at line:' + line + ' in url:' + url);
+};
+
+//	------------------------
+//	Handlers for link clicks
+//	------------------------
+
+// Show/hide debug console
+document.getElementById('showDebug').onclick = function() {
+	if (document.getElementById('debugDiv').style.display == 'block') {
+		document.getElementById('debugDiv').style.display = 'none';
+	} else {
+		document.getElementById('debugDiv').style.display = 'block';
+	}
+
+};
+
+</script>
+
+</body>
+</html>
